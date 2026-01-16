@@ -131,8 +131,19 @@ typedef _dart_chdir = int Function(Pointer<Utf8> __path);
 
 class Unix {
   Unix(DynamicLibrary lib) {
-    final utilsLib =
-        Platform.isLinux ? DynamicLibrary.open('libutil.so') : null;
+    // Try to load libutil with different version suffixes for compatibility
+    DynamicLibrary? utilsLib;
+    if (Platform.isLinux) {
+      try {
+        utilsLib = DynamicLibrary.open('libutil.so.1');
+      } catch (e) {
+        try {
+          utilsLib = DynamicLibrary.open('libutil.so');
+        } catch (e) {
+          // If both fail, utilsLib will be null
+        }
+      }
+    }
 
     if (!Platform.isAndroid) {
       // this line will crash on android

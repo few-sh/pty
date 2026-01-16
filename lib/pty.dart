@@ -48,11 +48,14 @@ abstract class PseudoTerminal {
       );
     }
 
+    late PseudoTerminal pty;
     if (blocking) {
-      return BlockingPseudoTerminal(core, ackProcessed);
+      pty = BlockingPseudoTerminal(core, ackProcessed);
     } else {
-      return PollingPseudoTerminal(core);
+      pty = PollingPseudoTerminal(core);
     }
+    pty.init();
+    return pty;
   }
 
   void init();
