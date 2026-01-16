@@ -36,8 +36,9 @@ abstract class PseudoTerminal {
       );
     } else {
       // Add '-l' as argument for the shell to perform a login, but only if
-      // this is an interactive shell (not running with -c option)
-      final hasCommandFlag = arguments.contains('-c');
+      // this is an interactive shell (not running with -c, -s, or similar command flags)
+      final hasCommandFlag = arguments.any((arg) => 
+        arg == '-c' || arg == '-s' || arg.startsWith('-c') || arg.startsWith('-s'));
       
       if (!hasCommandFlag && arguments.isEmpty) {
         // Interactive shell - add '-l' for login shell behavior

@@ -132,15 +132,16 @@ typedef _dart_chdir = int Function(Pointer<Utf8> __path);
 class Unix {
   Unix(DynamicLibrary lib) {
     // Try to load libutil with different version suffixes for compatibility
+    // Modern Linux systems typically use libutil.so.1, while older systems may use libutil.so
     DynamicLibrary? utilsLib;
     if (Platform.isLinux) {
-      try {
-        utilsLib = DynamicLibrary.open('libutil.so.1');
-      } catch (e) {
+      const libraryNames = ['libutil.so.1', 'libutil.so'];
+      for (final name in libraryNames) {
         try {
-          utilsLib = DynamicLibrary.open('libutil.so');
+          utilsLib = DynamicLibrary.open(name);
+          break;
         } catch (e) {
-          // If both fail, utilsLib will be null
+          // Continue to next library name
         }
       }
     }

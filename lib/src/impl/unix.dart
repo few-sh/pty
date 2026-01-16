@@ -162,20 +162,29 @@ class PtyCoreUnix implements PtyCore {
   /// This handles both normal exits and signal terminations
   int _decodeExitCode(int status) {
     // Check if process exited normally (WIFEXITED)
+    // A process exits normally if the lowest 7 bits are all zero
     if ((status & 0x7F) == 0) {
-      // Extract exit code (WEXITSTATUS)
+      // Extract exit code (WEXITSTATUS) from the high byte
       return (status >> 8) & 0xFF;
     }
     
     // Check if process was terminated by a signal (WIFSIGNALED)
-    if (((status & 0x7F) + 1) >> 1 > 0) {
+    // The condition checks if at least one of the lower 7 bits is set
+    if (_wasTerminatedBySignal(status)) {
       // Extract signal number (WTERMSIG) and return as exit code (128 + signal)
+      // This follows the convention that shell exit codes for signals are 128 + signal number
       final signal = status & 0x7F;
       return 128 + signal;
     }
     
-    // Fallback: return raw status
+    // Fallback: return raw status for unexpected cases
     return status;
+  }
+
+  /// Check if the process was terminated by a signal
+  /// Uses WIFSIGNALED macro logic: ((status & 0x7F) + 1) >> 1 > 0
+  bool _wasTerminatedBySignal(int status) {
+    return ((status & 0x7F) + 1) >> 1 > 0;
   }
 
   @override
