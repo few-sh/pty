@@ -180,7 +180,22 @@ class PtyCoreUnix implements PtyCore {
 
   @override
   bool kill([ProcessSignal signal = ProcessSignal.sigterm]) {
-    return unix.kill(_pid, consts.SIGKILL) == 0;
+    // Map Dart ProcessSignal to Unix signal number
+    int signalNumber;
+    if (signal == ProcessSignal.sigterm) {
+      signalNumber = consts.SIGTERM;
+    } else if (signal == ProcessSignal.sigkill) {
+      signalNumber = consts.SIGKILL;
+    } else if (signal == ProcessSignal.sighup) {
+      signalNumber = consts.SIGHUP;
+    } else if (signal == ProcessSignal.sigint) {
+      signalNumber = consts.SIGINT;
+    } else {
+      // Default to SIGTERM for unknown signals
+      signalNumber = consts.SIGTERM;
+    }
+    
+    return unix.kill(_pid, signalNumber) == 0;
   }
 
   @override
