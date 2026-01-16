@@ -144,7 +144,7 @@ class PtyCoreUnix implements PtyCore {
       return null;
     }
 
-    return status;
+    return _decodeExitCode(status);
   }
 
   @override
@@ -155,6 +155,26 @@ class PtyCoreUnix implements PtyCore {
     final status = statusPointer.value;
     calloc.free(statusPointer);
 
+    return _decodeExitCode(status);
+  }
+
+  /// Decode the waitpid status value to get the actual exit code
+  /// This handles both normal exits and signal terminations
+  int _decodeExitCode(int status) {
+    // Check if process exited normally (WIFEXITED)
+    if ((status & 0x7F) == 0) {
+      // Extract exit code (WEXITSTATUS)
+      return (status >> 8) & 0xFF;
+    }
+    
+    // Check if process was terminated by a signal (WIFSIGNALED)
+    if (((status & 0x7F) + 1) >> 1 > 0) {
+      // Extract signal number (WTERMSIG) and return as exit code (128 + signal)
+      final signal = status & 0x7F;
+      return 128 + signal;
+    }
+    
+    // Fallback: return raw status
     return status;
   }
 
