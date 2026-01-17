@@ -131,11 +131,16 @@ typedef _dart_chdir = int Function(Pointer<Utf8> __path);
 
 class Unix {
   Unix(DynamicLibrary lib) {
-    // Try to load libutil with different version suffixes for compatibility
-    // Modern Linux systems typically use libutil.so.1, while older systems may use libutil.so
+    // Load libutil library for forkpty function.
+    // On Linux, we try to load the library without version suffix first (which uses 
+    // the system's ldconfig to find the appropriate version), then fall back to 
+    // explicit version numbers. This is the standard approach for FFI library loading.
     DynamicLibrary? utilsLib;
     if (Platform.isLinux) {
-      const libraryNames = ['libutil.so.1', 'libutil.so'];
+      const libraryNames = [
+        'libutil.so',      // Standard name (ldconfig resolves to correct version)
+        'libutil.so.1',    // Explicit version for systems without proper symlinks
+      ];
       for (final name in libraryNames) {
         try {
           utilsLib = DynamicLibrary.open(name);

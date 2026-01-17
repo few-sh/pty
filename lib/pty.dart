@@ -35,12 +35,14 @@ abstract class PseudoTerminal {
         blocking: blocking,
       );
     } else {
-      // Add '-l' as argument for the shell to perform a login, but only if
-      // this is an interactive shell (not running with -c, -s, or similar command flags)
+      // Add '-l' flag for interactive shell sessions to get login shell behavior.
+      // Only do this for known shell executables and when no command flags are present.
+      // This ensures proper environment setup (PATH, HOME, etc.) for interactive use.
+      final isShell = _isShellExecutable(executable);
       final hasCommandFlag = arguments.any((arg) => 
         arg == '-c' || arg == '-s' || arg.startsWith('-c') || arg.startsWith('-s'));
       
-      if (!hasCommandFlag && arguments.isEmpty) {
+      if (isShell && !hasCommandFlag && arguments.isEmpty) {
         // Interactive shell - add '-l' for login shell behavior
         arguments = ['-l'];
       }
@@ -80,4 +82,15 @@ abstract class PseudoTerminal {
   void ackProcessed();
 
   void resize(int width, int height);
+}
+
+/// Check if the executable is a known shell that supports the -l flag
+bool _isShellExecutable(String executable) {
+  // Extract just the executable name (without path)
+  final name = executable.split('/').last;
+  
+  // Common shells that support -l flag for login shell behavior
+  const shells = ['sh', 'bash', 'zsh', 'ksh', 'dash', 'ash', 'fish', 'tcsh', 'csh'];
+  
+  return shells.contains(name);
 }
