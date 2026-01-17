@@ -144,7 +144,7 @@ class PtyCoreUnix implements PtyCore {
       return null;
     }
 
-    return status;
+    return _decodeExitCode(status);
   }
 
   @override
@@ -155,12 +155,56 @@ class PtyCoreUnix implements PtyCore {
     final status = statusPointer.value;
     calloc.free(statusPointer);
 
+    return _decodeExitCode(status);
+  }
+
+  /// Decode the waitpid status value to get the actual exit code
+  /// This handles both normal exits and signal terminations
+  int _decodeExitCode(int status) {
+    // Check if process exited normally (WIFEXITED)
+    // A process exits normally if the lowest 7 bits are all zero
+    if ((status & 0x7F) == 0) {
+      // Extract exit code (WEXITSTATUS) from the high byte
+      return (status >> 8) & 0xFF;
+    }
+    
+    // Check if process was terminated by a signal (WIFSIGNALED)
+    // The condition checks if at least one of the lower 7 bits is set
+    if (_wasTerminatedBySignal(status)) {
+      // Extract signal number (WTERMSIG) and return as exit code (128 + signal)
+      // This follows the convention that shell exit codes for signals are 128 + signal number
+      final signal = status & 0x7F;
+      return 128 + signal;
+    }
+    
+    // Fallback: return raw status for unexpected cases
     return status;
+  }
+
+  /// Check if the process was terminated by a signal
+  /// Uses WIFSIGNALED macro logic: ((status & 0x7F) + 1) >> 1 > 0
+  bool _wasTerminatedBySignal(int status) {
+    return ((status & 0x7F) + 1) >> 1 > 0;
   }
 
   @override
   bool kill([ProcessSignal signal = ProcessSignal.sigterm]) {
-    return unix.kill(_pid, consts.SIGKILL) == 0;
+    // Map Dart ProcessSignal to Unix signal number
+    int signalNumber;
+    if (signal == ProcessSignal.sigterm) {
+      signalNumber = consts.SIGTERM;
+    } else if (signal == ProcessSignal.sigkill) {
+      signalNumber = consts.SIGKILL;
+    } else if (signal == ProcessSignal.sighup) {
+      signalNumber = consts.SIGHUP;
+    } else if (signal == ProcessSignal.sigint) {
+      signalNumber = consts.SIGINT;
+    } else {
+      // Default to SIGTERM for unknown signals
+      signalNumber = consts.SIGTERM;
+    }
+    
+    return unix.kill(_pid, signalNumber) == 0;
   }
 
   @override

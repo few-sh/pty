@@ -35,9 +35,17 @@ abstract class PseudoTerminal {
         blocking: blocking,
       );
     } else {
-      //add '-l' as argument for the shell to perform a login
-      arguments = List<String>.generate(arguments.length + 1,
-          (index) => index == 0 ? '-l' : arguments[index - 1]);
+      // Add '-l' flag for interactive shell sessions to get login shell behavior.
+      // Only do this for known shell executables and when no command flags are present.
+      // This ensures proper environment setup (PATH, HOME, etc.) for interactive use.
+      final isShell = _isShellExecutable(executable);
+      final hasCommandFlag = arguments.any((arg) => 
+        arg.startsWith('-c') || arg.startsWith('-s'));
+      
+      if (isShell && !hasCommandFlag && arguments.isEmpty) {
+        // Interactive shell - add '-l' for login shell behavior
+        arguments = ['-l'];
+      }
 
       core = PtyCoreUnix.start(
         executable,
@@ -48,11 +56,14 @@ abstract class PseudoTerminal {
       );
     }
 
+    late PseudoTerminal pty;
     if (blocking) {
-      return BlockingPseudoTerminal(core, ackProcessed);
+      pty = BlockingPseudoTerminal(core, ackProcessed);
     } else {
-      return PollingPseudoTerminal(core);
+      pty = PollingPseudoTerminal(core);
     }
+    pty.init();
+    return pty;
   }
 
   void init();
@@ -71,4 +82,17 @@ abstract class PseudoTerminal {
   void ackProcessed();
 
   void resize(int width, int height);
+}
+
+/// Check if the executable is a known shell that supports the -l flag
+bool _isShellExecutable(String executable) {
+  // Extract just the executable name (without path)
+  // Note: This function is only called on Unix systems (not Windows),
+  // so Unix-style path separators are appropriate here
+  final name = executable.split('/').last;
+  
+  // Common shells that support -l flag for login shell behavior
+  const shells = ['sh', 'bash', 'zsh', 'ksh', 'dash', 'ash', 'fish', 'tcsh', 'csh'];
+  
+  return shells.contains(name);
 }

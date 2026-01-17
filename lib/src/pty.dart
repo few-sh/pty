@@ -48,9 +48,9 @@ class PollingPseudoTerminal extends BasePseudoTerminal {
     _exitCode = Completer<int>();
     _out = StreamController<String>();
     _initialized = true;
-    Timer.run(() {
-      _poll();
-    });
+    // Use Future.microtask to ensure polling starts as soon as possible
+    // This reduces race conditions with fast-exiting processes
+    Future.microtask(_poll);
   }
 
   List<int> _createDelayMicrosecondsStepList(
