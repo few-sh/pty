@@ -9,9 +9,9 @@ void main() {
       final pty = PseudoTerminal.start(_getShell(), []);
       await Future.delayed(Duration(milliseconds: 100));
       pty.kill(); // Default is SIGTERM
-      final code = await pty.exitCode;
+      final code = await pty.exitCode.timeout(Duration(seconds: 5));
       expect(code, equals(143)); // SIGTERM = 128 + 15
-    });
+    }, timeout: Timeout(Duration(seconds: 10)));
 
     test('Can send SIGTERM signal', () async {
       if (Platform.isWindows) return;
@@ -22,9 +22,9 @@ void main() {
       final terminated = pty.kill(ProcessSignal.sigterm);
       expect(terminated, isTrue);
       
-      final code = await pty.exitCode;
+      final code = await pty.exitCode.timeout(Duration(seconds: 5));
       expect(code, equals(143)); // SIGTERM = 128 + 15
-    });
+    }, timeout: Timeout(Duration(seconds: 10)));
 
     test('Can send SIGKILL signal', () async {
       if (Platform.isWindows) return;
@@ -35,9 +35,9 @@ void main() {
       final terminated = pty.kill(ProcessSignal.sigkill);
       expect(terminated, isTrue);
       
-      final code = await pty.exitCode;
+      final code = await pty.exitCode.timeout(Duration(seconds: 5));
       expect(code, equals(137)); // SIGKILL = 128 + 9
-    });
+    }, timeout: Timeout(Duration(seconds: 10)));
 
     test('Can resize PTY dimensions', () async {
       if (Platform.isWindows) return;
@@ -51,8 +51,8 @@ void main() {
       
       await Future.delayed(Duration(milliseconds: 50));
       pty.kill();
-      await pty.exitCode;
-    });
+      await pty.exitCode.timeout(Duration(seconds: 5));
+    }, timeout: Timeout(Duration(seconds: 10)));
   });
 
   group('UTF-8 and Unicode Support', () {
