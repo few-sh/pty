@@ -7,12 +7,20 @@ echo "Testing invalid UTF-8 sequences..."
 # Incomplete multi-byte sequence (will be handled by shell)
 # Note: Bash will typically replace invalid sequences with replacement character
 
-# Very long UTF-8 string (stress test) - using shell builtins for portability
+# Very long UTF-8 string (stress test) - using POSIX-compatible loop for portability
 echo "Long string test:"
-# Generate long string with shell builtins
-for i in {1..200}; do printf "AAAAA"; done
+# Generate long string with POSIX-compatible loop
+i=1
+while [ $i -le 200 ]; do 
+  printf "AAAAA"
+  i=$((i+1))
+done
 echo "世界"
-for i in {1..200}; do printf "BBBBB"; done
+i=1
+while [ $i -le 200 ]; do 
+  printf "BBBBB"
+  i=$((i+1))
+done
 echo ""
 
 # Mixed encodings within same output
@@ -45,6 +53,10 @@ for i in {0..31}; do
 done
 echo ""
 
-# Maximum width line test - using shell builtins
-for i in {1..200}; do printf "="; done
+# Maximum width line test - using POSIX-compatible loop
+i=1
+while [ $i -le 200 ]; do 
+  printf "="
+  i=$((i+1))
+done
 echo ""

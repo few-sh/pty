@@ -40,7 +40,7 @@ abstract class PseudoTerminal {
       // This ensures proper environment setup (PATH, HOME, etc.) for interactive use.
       final isShell = _isShellExecutable(executable);
       final hasCommandFlag = arguments.any((arg) => 
-        arg == '-c' || arg == '-s' || arg.startsWith('-c') || arg.startsWith('-s'));
+        arg.startsWith('-c') || arg.startsWith('-s'));
       
       if (isShell && !hasCommandFlag && arguments.isEmpty) {
         // Interactive shell - add '-l' for login shell behavior

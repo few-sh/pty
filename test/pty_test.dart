@@ -193,7 +193,7 @@ void main() {
       final combined = outputs.join();
       expect(combined, contains('Red'));
       // Should also contain ANSI escape sequences
-      expect(combined, contains('\x1b[') || contains('[31m'));
+      expect(combined, anyOf(contains('\x1b['), contains('[31m')));
       
       pty.write('exit\n');
       await pty.exitCode.timeout(Duration(seconds: 2));
@@ -260,8 +260,8 @@ void main() {
       final pty = PseudoTerminal.start(_getShell(), []);
       await Future.delayed(Duration(milliseconds: 200));
       
-      // Generate a long string using shell builtins for portability
-      pty.write('for i in {1..500}; do printf "A"; done; echo\n');
+      // Generate a long string using POSIX-compatible shell commands for portability
+      pty.write('i=1; while [ \\$i -le 500 ]; do printf "A"; i=\\$((i+1)); done; echo\n');
       
       final outputs = <String>[];
       final timeout = DateTime.now().add(Duration(seconds: 3));
@@ -287,8 +287,8 @@ void main() {
       final pty = PseudoTerminal.start(_getShell(), []);
       await Future.delayed(Duration(milliseconds: 200));
       
-      // Multiple quick outputs
-      pty.write('for i in {1..20}; do echo "Line \$i"; done\n');
+      // Multiple quick outputs using POSIX-compatible loop
+      pty.write('i=1; while [ \\$i -le 20 ]; do echo "Line \\$i"; i=\\$((i+1)); done\n');
       
       final outputs = <String>[];
       final timeout = DateTime.now().add(Duration(seconds: 3));
