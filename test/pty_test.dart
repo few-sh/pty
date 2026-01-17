@@ -261,7 +261,7 @@ void main() {
       await Future.delayed(Duration(milliseconds: 200));
       
       // Generate a long string using POSIX-compatible shell commands for portability
-      pty.write('i=1; while [ \\$i -le 500 ]; do printf "A"; i=\\$((i+1)); done; echo\n');
+      pty.write(r'i=1; while [ $i -le 500 ]; do printf "A"; i=$((i+1)); done; echo' '\n');
       
       final outputs = <String>[];
       final timeout = DateTime.now().add(Duration(seconds: 3));
@@ -288,7 +288,7 @@ void main() {
       await Future.delayed(Duration(milliseconds: 200));
       
       // Multiple quick outputs using POSIX-compatible loop
-      pty.write('i=1; while [ \\$i -le 20 ]; do echo "Line \\$i"; i=\\$((i+1)); done\n');
+      pty.write(r'i=1; while [ $i -le 20 ]; do echo "Line $i"; i=$((i+1)); done' '\n');
       
       final outputs = <String>[];
       final timeout = DateTime.now().add(Duration(seconds: 3));
