@@ -7,9 +7,13 @@ echo "Testing invalid UTF-8 sequences..."
 # Incomplete multi-byte sequence (will be handled by shell)
 # Note: Bash will typically replace invalid sequences with replacement character
 
-# Very long UTF-8 string (stress test)
+# Very long UTF-8 string (stress test) - using shell builtins for portability
 echo "Long string test:"
-python3 -c "print('A' * 1000 + '世界' + 'B' * 1000)"
+# Generate long string with shell builtins
+for i in {1..200}; do printf "AAAAA"; done
+echo "世界"
+for i in {1..200}; do printf "BBBBB"; done
+echo ""
 
 # Mixed encodings within same output
 echo "Mixed test: ASCII-café-世界-😀-مرحبا"
@@ -22,6 +26,8 @@ echo "From env: $UTF8_VAR"
 printf '\xEF\xBB\xBFWith BOM\n'
 
 # Surrogate pairs and high Unicode
+# Note: This emoji uses regional indicator symbols and tag characters (invisible modifiers)
+# Testing complex Unicode sequences that may not display correctly in all terminals
 echo "High Unicode: 🏴󠁧󠁢󠁳󠁣󠁴󠁿"
 
 # Line break variations
@@ -39,5 +45,6 @@ for i in {0..31}; do
 done
 echo ""
 
-# Maximum width line test
-python3 -c "print('=' * 200)"
+# Maximum width line test - using shell builtins
+for i in {1..200}; do printf "="; done
+echo ""

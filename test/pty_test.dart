@@ -193,7 +193,7 @@ void main() {
       final combined = outputs.join();
       expect(combined, contains('Red'));
       // Should also contain ANSI escape sequences
-      expect(combined, contains('\x1b[') | contains('[31m'));
+      expect(combined, contains('\x1b[') || contains('[31m'));
       
       pty.write('exit\n');
       await pty.exitCode.timeout(Duration(seconds: 2));
@@ -260,8 +260,8 @@ void main() {
       final pty = PseudoTerminal.start(_getShell(), []);
       await Future.delayed(Duration(milliseconds: 200));
       
-      // Generate a long string
-      pty.write('python3 -c "print(\\'A\\' * 500)"\n');
+      // Generate a long string using shell builtins for portability
+      pty.write('for i in {1..500}; do printf "A"; done; echo\n');
       
       final outputs = <String>[];
       final timeout = DateTime.now().add(Duration(seconds: 3));
