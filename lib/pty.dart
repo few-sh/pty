@@ -87,6 +87,8 @@ abstract class PseudoTerminal {
 /// Check if the executable is a known shell that supports the -l flag
 bool _isShellExecutable(String executable) {
   // Extract just the executable name (without path)
+  // Note: This function is only called on Unix systems (not Windows),
+  // so Unix-style path separators are appropriate here
   final name = executable.split('/').last;
   
   // Common shells that support -l flag for login shell behavior

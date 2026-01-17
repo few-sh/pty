@@ -44,12 +44,14 @@ echo "Unix: Line1"
 echo "Line2"
 printf 'Windows: Line1\r\nLine2\r\n'
 
-# Control characters that should be escaped or handled
+# Control characters that should be escaped or handled - using POSIX-compatible loop
 echo "Control chars:"
-for i in {0..31}; do
-  if [ $i -ne 10 ] && [ $i -ne 13 ]; then
-    printf "\\x$(printf '%02x' $i)"
+i=0
+while [ $i -le 31 ]; do
+  if [ "$i" -ne 10 ] && [ "$i" -ne 13 ]; then
+    printf "\\x$(printf '%02x' "$i")"
   fi
+  i=$((i+1))
 done
 echo ""
 
